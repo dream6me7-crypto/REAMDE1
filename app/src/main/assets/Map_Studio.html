@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Map Studio</title>
+<style>
+:root{--bg:#1e1e20;--p:#2d2d30;--p2:#3a3a3f;--in:#1b1b1d;--b:#161617;--t:#e6e6e6;--ac:#0b6cbc;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#dcdcdc;--p:#f1f1f1;--p2:#dedede;--in:#fff;--b:#bdbdbd;--t:#1b1b1b}}
+:root[data-theme="light"]{--bg:#dcdcdc;--p:#f1f1f1;--p2:#dedede;--in:#fff;--b:#bdbdbd;--t:#1b1b1b}
+html,body{height:100%;margin:0;overflow:hidden;background:var(--bg);color:var(--t);font:13px system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-user-select:none;user-select:none}
+body{display:flex;flex-direction:column}
+#rib{display:flex;gap:2px;overflow-x:auto;background:var(--p);border-bottom:1px solid var(--b);padding:4px;flex:0 0 auto;align-items:stretch}
+.g{display:flex;gap:2px;align-items:center;padding:0 6px;border-right:1px solid var(--b)}
+.tb{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:46px;height:46px;background:transparent;color:var(--t);border:1px solid transparent;border-radius:4px;font-size:17px;padding:2px 4px;flex:0 0 auto}
+.tb small{font-size:10px;opacity:.85;margin-top:1px}
+.tb.on{background:var(--ac);border-color:var(--ac);color:#fff}
+.tb:active{background:var(--p2)}
+#rib select,#rib input[type=color]{height:28px;background:var(--in);color:var(--t);border:1px solid var(--b);border-radius:3px;font-size:12px}
+#rib input[type=color]{width:34px;padding:1px}
+.lb{font-size:10px;opacity:.8;display:flex;flex-direction:column;gap:2px;align-items:center}
+#main{flex:1;display:flex;min-height:0}
+#vp{flex:1;position:relative;min-width:0;touch-action:none}
+#cv{position:absolute;inset:0;width:100%;height:100%;display:block}
+#dock{width:300px;display:flex;flex-direction:column;background:var(--p);border-left:1px solid var(--b)}
+#tabs{display:flex;background:var(--p2)}
+#tabs button{flex:1;padding:9px 4px;background:transparent;color:var(--t);border:0;border-bottom:2px solid transparent;font-size:12px}
+#tabs button.on{border-bottom-color:var(--ac);background:var(--p)}
+#pane{flex:1;overflow:auto;touch-action:pan-y;-webkit-user-select:text;user-select:text}
+.pn{display:none}.pn.on{display:block}
+.n{padding:7px 8px;border-bottom:1px solid var(--b);display:flex;gap:6px}
+.n.c{padding-left:22px;cursor:pointer}.n.s{background:var(--ac);color:#fff}
+.em{padding:14px;opacity:.7}
+.sec{background:var(--p2);padding:5px 8px;font-weight:600;font-size:12px}
+.r{display:flex;align-items:center;gap:6px;padding:4px 8px}
+.r label{width:84px;opacity:.85;font-size:12px;flex:0 0 auto}
+.v{display:flex;gap:4px;flex:1;min-width:0}
+#pane input[type=number],#pane input[type=text],#pane select{background:var(--in);color:var(--t);border:1px solid var(--b);border-radius:3px;padding:6px 4px;font-size:12px;width:100%;min-width:0;box-sizing:border-box}
+#pane input[type=color]{width:44px;height:30px;padding:1px;border:1px solid var(--b);background:var(--in)}
+.tg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:8px}
+.tg button{background:var(--p2);color:var(--t);border:1px solid var(--b);border-radius:6px;padding:10px 2px;font-size:11px}
+.tg b{display:block;font-size:22px;font-weight:400}
+@media (max-width:800px){#main{flex-direction:column}#dock{width:auto;height:40%;border-left:0;border-top:1px solid var(--b)}#dock.min{height:auto}#dock.min #pane{display:none}#pane input,#pane select{font-size:16px!important}}
+#md{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;z-index:9;align-items:flex-end}
+#md .bx{background:var(--p);width:100%;max-height:80%;padding:10px;display:flex;flex-direction:column;gap:8px;box-sizing:border-box}
+#md .rw{display:flex;gap:6px}
+#md button{background:var(--p2);color:var(--t);border:1px solid var(--b);border-radius:4px;padding:9px 12px}
+#md button.on{background:var(--ac);color:#fff}
+textarea{height:220px;direction:ltr;font:11px/1.4 ui-monospace,Menlo,monospace;background:var(--in);color:var(--t);border:1px solid var(--b);padding:6px;-webkit-user-select:text;user-select:text}
+#wz,#ai{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;z-index:9;align-items:flex-end}
+#wz .bx,#ai .bx{background:var(--p);width:100%;max-height:85%;overflow:auto;padding:10px;display:flex;flex-direction:column;gap:8px;box-sizing:border-box}
+#wz .rw,#ai .rw{display:flex;gap:6px;align-items:center}
+#wz button,#ai button{background:var(--p2);color:var(--t);border:1px solid var(--b);border-radius:4px;padding:9px 12px}
+#wz button.on,#ai button.on{background:var(--ac);color:#fff}
+#wz input[type=text],#wz input[type=number],#ai input[type=text],#wz input[type=number]{background:var(--in);color:var(--t);border:1px solid var(--b);border-radius:3px;padding:7px;font-size:16px;width:100%;min-width:0;box-sizing:border-box}
+#wz input[type=file],#ai input[type=file]{font-size:13px;color:var(--t)}
+.th{width:44px;height:44px;object-fit:cover;border-radius:4px;border:1px solid var(--b)}
+.tt{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px}
+.sb{background:var(--p2);color:var(--t);border:1px solid var(--b);border-radius:4px;padding:4px 8px;font-size:14px}
+input[type=number]{direction:ltr}
+
+#aip{height:84px;font:16px system-ui,sans-serif;direction:ltr;unicode-bidi:plaintext;text-align:start;border-radius:3px}
+#ai input[type=password]{background:var(--in);color:var(--t);border:1px solid var(--b);border-radius:3px;padding:7px;font-size:16px;width:100%;min-width:0;box-sizing:border-box}
+#ast{font-size:12px;min-height:16px;white-space:pre-wrap}
+.ft{font-size:11px;background:var(--in);border:1px solid var(--b);border-radius:4px;padding:4px 6px;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+</style>
+</head>
+<body>
+<div id="rib">
+<div class="g"><button class="tb on" data-tool="select">⬚<small>Select</small></button><button class="tb" data-tool="move">✥<small>Move</small></button><button class="tb" data-tool="scale">⤢<small>Scale</small></button><button class="tb" data-tool="rot">⟳<small>Rotate</small></button></div>
+<div class="g"><button class="tb" id="addp">▣<small>Part</small></button><button class="tb" id="img">🖼<small>From Images</small></button><button class="tb" id="aib" style="background:var(--ac);color:#fff">✨<small>AI</small></button><select id="shp"><option value="block">Block</option><option value="ball">Sphere</option><option value="cyl">Cylinder</option><option value="wedge">Wedge</option></select></div>
+<div class="g"><div class="lb">Color<input type="color" id="col" value="#a3a2a5"></div><div class="lb">Material<select id="mat"></select></div><button class="tb" id="anc">⚓<small>Anchor</small></button></div>
+<div class="g"><div class="lb">Move<select id="im"><option>0.05</option><option>0.25</option><option>0.5</option><option selected>1</option><option>2</option><option>5</option></select></div><div class="lb">Rotate<select id="ir"><option>1</option><option>5</option><option>15</option><option selected>45</option><option>90</option></select></div></div>
+<div class="g"><button class="tb" id="mu">☑<small>Multi</small></button><button class="tb" id="dup">⧉<small>Duplicate</small></button><button class="tb" id="gnd">⤓<small>Ground</small></button><button class="tb" id="del">🗑<small>Delete</small></button></div>
+<div class="g"><button class="tb" id="un">↶<small>Undo</small></button><button class="tb" id="re">↷<small>Redo</small></button><button class="tb" id="ex" style="background:var(--ac);color:#fff">⬆<small>Publish</small></button><button class="tb" id="lang">🌐<small>EN / ع</small></button></div>
+</div>
+<div id="main">
+<div id="vp"><canvas id="cv"></canvas></div>
+<div id="dock"><div id="tabs"><button data-d="exp" class="on">Explorer</button><button data-d="props">Properties</button><button data-d="box">Toolbox</button></div>
+<div id="pane"><div id="exp" class="pn on"></div><div id="props" class="pn"></div><div id="box" class="pn"></div></div></div>
+</div>
+<div id="md"><div class="bx">
+<div class="rw"><button data-t="luau" class="on">Luau script</button><button data-t="xml">.rbxlx</button><span style="flex:1"></span><button id="cp" class="on">Copy</button><button id="cl">Close</button></div>
+<div id="tip" style="font-size:12px"></div><textarea id="out" readonly></textarea></div></div>
+<div id="wz"><div class="bx">
+<div class="rw"><button data-wm="bld" class="on">Building</button><button data-wm="chr">Character</button><button data-wm="cut">Cutout</button></div>
+<div id="wh" style="font-size:12px"></div>
+<input type="file" id="wf" accept="image/*" multiple>
+<div id="wp" class="rw" style="overflow-x:auto"></div>
+<div class="rw"><label>Name</label><input type="text" id="wn"></div>
+<div class="rw" id="wb"><label>Width</label><input type="number" id="ww" value="20"><label>Depth</label><input type="number" id="wd" value="20"><label>Floors</label><input type="number" id="wl" value="3"></div>
+<div class="rw"><button id="wc" class="on">Create</button><button id="wx">Close</button></div>
+</div></div>
+<div id="ai"><div class="bx">
+<div id="aih" style="font-size:12px">Describe what to build, and attach a house photo, plans or any file. The AI builds it in the world.</div>
+<textarea id="aip" placeholder="e.g. Build this house at 1:1 scale, two floors with a gable roof / ابنِ البيت اللي في الصورة"></textarea>
+<div class="rw"><input type="file" id="aif" accept="image/*,.pdf,.txt,.md,.json,.csv,.lua,.luau,.xml" multiple></div>
+<div id="aip2" class="rw" style="overflow-x:auto"></div>
+<div class="rw"><input type="password" id="aik" placeholder="Anthropic API key (only if used outside Claude)"></div>
+<div id="ast"></div>
+<div class="rw"><button id="aig" class="on">Generate</button><button id="aix">Close</button></div>
+</div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const $=i=>document.getElementById(i),R=THREE,XYZ=['x','y','z'],vp=$('vp'),cv=$('cv');
+const AX={x:new R.Vector3(1,0,0),y:new R.Vector3(0,1,0),z:new R.Vector3(0,0,1)},COL={x:0xe5484d,y:0x3ecf5f,z:0x3b82f6};
+const MATS={Plastic:[.6,0],SmoothPlastic:[.3,0],Wood:[.9,0],Slate:[.85,0],Concrete:[.95,0],Metal:[.35,.8],Grass:[1,0],Brick:[.9,0],Neon:[.3,0],Glass:[.1,0]};
+const MTOK={Plastic:256,SmoothPlastic:272,Wood:512,Slate:800,Concrete:816,Metal:1088,Grass:1280,Brick:848,Neon:288,Glass:1568};
+$('mat').innerHTML=Object.keys(MATS).map(k=>`<option>${k}</option>`).join('');
+const ren=new R.WebGLRenderer({canvas:cv,antialias:true});ren.setPixelRatio(Math.min(devicePixelRatio,2));
+const sc=new R.Scene();sc.background=new R.Color(0xa5c8ee);
+const cam=new R.PerspectiveCamera(60,1,.1,3000);
+sc.add(new R.HemisphereLight(0xffffff,0x778899,.9));const sun=new R.DirectionalLight(0xffffff,.7);sun.position.set(60,100,40);sc.add(sun);
+const tc=document.createElement('canvas');tc.width=tc.height=64;const cx=tc.getContext('2d');cx.fillStyle='#a3a2a5';cx.fillRect(0,0,64,64);cx.strokeStyle='#8e8d90';cx.lineWidth=3;cx.strokeRect(0,0,64,64);
+const tx=new R.CanvasTexture(tc);tx.wrapS=tx.wrapT=R.RepeatWrapping;tx.repeat.set(128,128);
+const base=new R.Mesh(new R.PlaneGeometry(512,512),new R.MeshStandardMaterial({map:tx}));base.rotation.x=-Math.PI/2;base.position.y=-.02;sc.add(base);
+let th=.7,ph=.55,rad=40,tg=new R.Vector3(0,2,0);
+function upCam(){cam.position.set(tg.x+rad*Math.cos(ph)*Math.sin(th),tg.y+rad*Math.sin(ph),tg.z+rad*Math.cos(ph)*Math.cos(th));cam.lookAt(tg);cam.updateMatrixWorld()}
+new ResizeObserver(()=>{const w=vp.clientWidth,h=vp.clientHeight;if(w&&h){ren.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix()}}).observe(vp);upCam();
+// geometry + parts
+const geo={block:new R.BoxGeometry(1,1,1),ball:new R.SphereGeometry(.5,24,16),cyl:new R.CylinderGeometry(.5,.5,1,28).rotateZ(Math.PI/2),wedge:(()=>{const g=new R.BufferGeometry(),a=[],P=(x,y,z)=>[x,y,z];
+const F0=P(-.5,-.5,-.5),B0=P(-.5,-.5,.5),T0=P(-.5,.5,.5),F1=P(.5,-.5,-.5),B1=P(.5,-.5,.5),T1=P(.5,.5,.5);
+[[F1,B1,T1],[F0,T0,B0],[F0,F1,B1],[F0,B1,B0],[B0,B1,T1],[B0,T1,T0],[F0,T0,T1],[F0,T1,F1]].forEach(t=>t.forEach(p=>a.push(...p)));
+g.setAttribute('position',new R.Float32BufferAttribute(a,3));g.computeVertexNormals();return g})()};
+geo.spawn=geo.block;
+const NM={block:'Part',ball:'Ball',cyl:'Cylinder',wedge:'Wedge',spawn:'SpawnLocation'},IC={block:'▣',ball:'●',cyl:'⬭',wedge:'◣',spawn:'✚'};
+const items=[],sels=new Set();let cur=null,tool='select',multi=false,im=1,ir=45;
+function look(m){const u=m.userData,[r,mt]=MATS[u.mat],x=m.material;x.roughness=r;x.metalness=mt;x.transparent=u.tr>0;x.opacity=1-u.tr;x.depthWrite=u.tr==0;x.emissive.set(u.mat=='Neon'?x.color:0);x.emissiveIntensity=.7}
+function mk(t,o){o=o||{};const m=new R.Mesh(geo[t],new R.MeshStandardMaterial({color:o.c==null?0xa3a2a5:o.c,flatShading:true,side:R.DoubleSide}));
+m.userData={t,name:o.n||NM[t],mat:o.m||'Plastic',tr:o.tr||0,an:o.an!==false,co:o.co!==false,dc:[],dmesh:{}};
+const ol=new R.LineSegments(new R.EdgesGeometry(geo[t]),new R.LineBasicMaterial({color:0x2d9cff,depthTest:false}));ol.visible=false;ol.renderOrder=5;m.add(ol);m.userData.ol=ol;
+m.position.fromArray(o.p);m.rotation.set(...o.r);m.scale.fromArray(o.s);look(m);(o.dc||[]).forEach(d=>addDecal(m,d.f,d.i));sc.add(m);items.push(m);return m}
+function addPart(t,s,n){const m=mk(t,{p:[Math.round(tg.x),s[1]/2,Math.round(tg.z)],r:[0,0,0],s,n});select(m);save()}
+// gizmo
+const gz=new R.Group(),gm={move:new R.Group(),scale:new R.Group(),rot:new R.Group()},ident=new R.Quaternion();sc.add(gz);Object.values(gm).forEach(g=>gz.add(g));
+const bm=c=>new R.MeshBasicMaterial({color:c,depthTest:false,transparent:true}),gh=()=>new R.MeshBasicMaterial({transparent:true,opacity:0,depthTest:false,depthWrite:false});
+function hd(g,ge,ma,a,k,s,fn){const m=new R.Mesh(ge,ma);m.renderOrder=10;m.userData={a,k,s};fn(m);g.add(m)}
+XYZ.forEach(a=>{const q=new R.Quaternion().setFromUnitVectors(new R.Vector3(0,1,0),AX[a]),q2=new R.Quaternion().setFromUnitVectors(new R.Vector3(0,0,1),AX[a]);
+const at=d=>m=>{m.position.copy(AX[a]).multiplyScalar(d);m.quaternion.copy(q)};
+hd(gm.move,new R.CylinderGeometry(.05,.05,1.2),bm(COL[a]),a,'move',1,at(.9));hd(gm.move,new R.ConeGeometry(.18,.45),bm(COL[a]),a,'move',1,at(1.7));hd(gm.move,new R.CylinderGeometry(.28,.28,1.8),gh(),a,'move',1,at(1.1));
+[1,-1].forEach(s=>{hd(gm.scale,new R.BoxGeometry(.32,.32,.32),bm(COL[a]),a,'scale',s,()=>{});hd(gm.scale,new R.BoxGeometry(.8,.8,.8),gh(),a,'scale',s,()=>{})});
+hd(gm.rot,new R.TorusGeometry(1.6,.04,8,64),bm(COL[a]),a,'rot',1,m=>m.quaternion.copy(q2));hd(gm.rot,new R.TorusGeometry(1.6,.22,6,40),gh(),a,'rot',1,m=>m.quaternion.copy(q2))});
+// select / ui
+function select(m,add){if(!add||!m)sels.clear();if(m){if(add&&sels.has(m))sels.delete(m);else sels.add(m)}cur=[...sels].pop()||null;sync()}
+function sync(){items.forEach(x=>x.userData.ol.visible=sels.has(x));
+$('exp').innerHTML='<div class="n">▾ ▣ Workspace</div>'+items.map((m,i)=>`<div class="n c${sels.has(m)?' s':''}" data-i="${i}"><span>${IC[m.userData.t]}</span>${m.userData.name.replace(/</g,'&lt;')}</div>`).join('');
+if(cur){$('col').value='#'+cur.material.color.getHexString();$('mat').value=cur.userData.mat}$('anc').classList.toggle('on',!!cur&&cur.userData.an);props()}
+function props(){const p=$('props');if(!cur){p.innerHTML='<div class="em">Select a part to edit its properties.</div>';return}
+const u=cur.userData,r=cur.rotation,v=(k,a)=>`<div class="v">${a.map((x,i)=>`<input type="number" step="any" data-k="${k}" data-i="${i}" value="${+(+x).toFixed(3)}">`).join('')}</div>`,row=(l,h)=>`<div class="r"><label>${l}</label>${h}</div>`;
+p.innerHTML=`<div class="sec">Data</div>${row('Name',`<input type="text" data-k="n" value="${u.name.replace(/"/g,'&quot;')}">`)}<div class="sec">Transform</div>${row('Position',v('p',cur.position.toArray()))}${row('Orientation',v('r',[r.x,r.y,r.z].map(a=>a*180/Math.PI)))}${row('Size',v('s',cur.scale.toArray()))}<div class="sec">Appearance</div>${row('Color',`<input type="color" data-k="c" value="#${cur.material.color.getHexString()}">`)}${row('Material',`<select data-k="m">${Object.keys(MATS).map(k=>`<option${k==u.mat?' selected':''}>${k}</option>`).join('')}</select>`)}${row('Transparency',`<input type="number" step="0.1" min="0" max="1" data-k="tr" value="${u.tr}">`)}<div class="sec">Behavior</div>${row('Anchored',`<input type="checkbox" data-k="an"${u.an?' checked':''}>`)}${row('CanCollide',`<input type="checkbox" data-k="co"${u.co?' checked':''}>`)}`}
+$('props').addEventListener('change',e=>{const t=e.target,k=t.dataset.k,i=+t.dataset.i;if(!cur||!k)return;const m=cur,u=m.userData,x=parseFloat(t.value)||0;
+if(k=='n')u.name=t.value||'Part';else if(k=='p')m.position[XYZ[i]]=x;else if(k=='r')m.rotation[XYZ[i]]=x*Math.PI/180;else if(k=='s')m.scale[XYZ[i]]=Math.max(.05,x);else if(k=='c')m.material.color.set(t.value);else if(k=='m')u.mat=t.value;else if(k=='tr')u.tr=Math.min(1,Math.max(0,x));else u[k]=t.checked;look(m);save()});
+$('exp').onclick=e=>{const n=e.target.closest('[data-i]');if(n)select(items[+n.dataset.i],multi)};
+const TB=[['Part','block',[4,1,2],'▣'],['Sphere','ball',[4,4,4],'●'],['Cylinder','cyl',[2,4,4],'⬭'],['Wedge','wedge',[4,2,4],'◣'],['Floor','block',[32,1,32],'▭'],['Wall','block',[16,10,1],'▮'],['Spawn','spawn',[6,1,6],'✚']];
+$('box').innerHTML='<div class="tg">'+TB.map((t,i)=>`<button data-b="${i}"><b>${t[3]}</b>${t[0]}</button>`).join('')+'</div>';
+$('box').onclick=e=>{const b=e.target.closest('[data-b]');if(b){const t=TB[+b.dataset.b];addPart(t[1],t[2].slice(),t[0]=='Part'?null:t[0])}};
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{const was=b.classList.contains('on');document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('on',x==b));document.querySelectorAll('.pn').forEach(x=>x.classList.toggle('on',x.id==b.dataset.d));$('dock').classList.toggle('min',was&&!$('dock').classList.contains('min'))});
+document.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>{tool=b.dataset.tool;document.querySelectorAll('[data-tool]').forEach(x=>x.classList.toggle('on',x==b))});
+$('addp').onclick=()=>{const t=$('shp').value,tb=TB.find(x=>x[1]==t);addPart(t,tb[2].slice(),null)};
+$('col').oninput=e=>sels.forEach(m=>m.material.color.set(e.target.value));$('col').onchange=()=>{sels.forEach(look);save()};
+$('mat').onchange=e=>{sels.forEach(m=>{m.userData.mat=e.target.value;look(m)});save()};
+$('anc').onclick=()=>{if(cur){const v=!cur.userData.an;sels.forEach(m=>m.userData.an=v);save()}};
+$('im').onchange=e=>im=+e.target.value;$('ir').onchange=e=>ir=+e.target.value;
+$('mu').onclick=()=>{multi=!multi;$('mu').classList.toggle('on',multi)};
+$('del').onclick=()=>{if(!cur)return;sels.forEach(m=>{sc.remove(m);items.splice(items.indexOf(m),1)});select(null);save()};
+$('dup').onclick=()=>{if(!cur)return;const n=[...sels].map(c=>mk(c.userData.t,{c:c.material.color.getHex(),n:c.userData.name,m:c.userData.mat,tr:c.userData.tr,an:c.userData.an,co:c.userData.co,dc:c.userData.dc,p:[c.position.x+im,c.position.y,c.position.z+im],r:[c.rotation.x,c.rotation.y,c.rotation.z],s:c.scale.toArray()}));select(null);n.forEach(m=>select(m,true));save()};
+$('gnd').onclick=()=>{if(!cur)return;sels.forEach(m=>{m.updateMatrixWorld(true);m.position.y-=new R.Box3().setFromObject(m).min.y});save()};
+// ===== images + language =====
+const IMG={},TEX={},FN={f:'Front',b:'Back',r:'Right',l:'Left',t:'Top'};try{Object.assign(IMG,JSON.parse(localStorage.getItem('mapstudio_img')||'{}'))}catch(e){}
+const FACE={f:{p:[0,0,-.5],r:[0,Math.PI,0]},b:{p:[0,0,.5],r:[0,0,0]},r:{p:[.5,0,0],r:[0,Math.PI/2,0]},l:{p:[-.5,0,0],r:[0,-Math.PI/2,0]},t:{p:[0,.5,0],r:[-Math.PI/2,0,0]}};
+const tex=i=>TEX[i]||(TEX[i]=new R.TextureLoader().load(IMG[i]));
+function rmDecal(m,f){const o=m.userData.dmesh[f];if(o){m.remove(o);delete m.userData.dmesh[f]}m.userData.dc=m.userData.dc.filter(d=>d.f!=f)}
+function addDecal(m,f,i){if(!IMG[i])return;rmDecal(m,f);m.userData.dc.push({f,i});const d=new R.Mesh(new R.PlaneGeometry(1,1),new R.MeshLambertMaterial({map:tex(i),transparent:true,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}));d.position.set(...FACE[f].p).multiplyScalar(1.001);d.rotation.set(...FACE[f].r);m.add(d);m.userData.dmesh[f]=d}
+function readImg(file,max){return new Promise(res=>{const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(im.width*k));c.height=Math.max(1,Math.round(im.height*k));c.getContext('2d').drawImage(im,0,0,c.width,c.height);res(c)};im.src=fr.result};fr.readAsDataURL(file)})}
+function store(c,png){const id='i'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);IMG[id]=c.toDataURL(png?'image/png':'image/jpeg',.78);try{localStorage.setItem('mapstudio_img',JSON.stringify(IMG))}catch(e){}return id}
+function avg(c,x0,y0,x1,y1){const w=c.width,h=c.height,d=c.getContext('2d').getImageData(Math.floor(x0*w),Math.floor(y0*h),Math.max(1,Math.floor((x1-x0)*w)),Math.max(1,Math.floor((y1-y0)*h))).data;let r=0,g=0,b=0,n=0;for(let i=0;i<d.length;i+=4){if(d[i+3]<128)continue;r+=d[i];g+=d[i+1];b+=d[i+2];n++}n=n||1;return(Math.round(r/n)<<16)|(Math.round(g/n)<<8)|Math.round(b/n)}
+function keyBg(c){const x=c.getContext('2d'),w=c.width,h=c.height,I=x.getImageData(0,0,w,h),d=I.data,cs=[[0,0],[w-1,0],[0,h-1],[w-1,h-1]].map(([a,b])=>{const i=(b*w+a)*4;return[d[i],d[i+1],d[i+2]]}),bg=[0,1,2].map(k=>cs.reduce((s,v)=>s+v[k],0)/4);
+for(let i=0;i<d.length;i+=4){const q=Math.hypot(d[i]-bg[0],d[i+1]-bg[1],d[i+2]-bg[2]);if(q<55)d[i+3]=0;else if(q<90)d[i+3]=(q-55)/35*255}x.putImageData(I,0,0);return c}
+const AR={Select:'تحديد',Move:'نقل',Scale:'تحجيم',Rotate:'تدوير',Part:'قطعة',Block:'مكعب',Sphere:'كرة',Cylinder:'أسطوانة',Wedge:'وتد',Color:'اللون',Material:'الخامة',Anchor:'تثبيت',Multi:'متعدد',Duplicate:'نسخ',Ground:'للأرض',Delete:'حذف',Undo:'تراجع',Redo:'إعادة',Publish:'تصدير','From Images':'من صور',Explorer:'المستكشف',Properties:'الخصائص',Toolbox:'الأدوات','Luau script':'سكربت Luau',Copy:'نسخ',Close:'إغلاق','Copied ✓':'تم ✓',Name:'الاسم',Position:'الموقع',Orientation:'الدوران',Size:'الحجم',Transparency:'الشفافية',Anchored:'مثبّت',CanCollide:'تصادم',Data:'بيانات',Transform:'التحويل',Appearance:'المظهر',Behavior:'السلوك',Images:'الصور',Front:'أمام',Right:'يمين',Back:'خلف',Left:'يسار',Roof:'سقف',Building:'مبنى',Character:'شخصية',Cutout:'صورة قائمة',Floor:'أرضية',Wall:'جدار',Spawn:'نقطة ظهور',Width:'العرض',Depth:'العمق',Floors:'الأدوار',Create:'إنشاء',AI:'ذكاء',Generate:'توليد','Describe what to build, and attach a house photo, plans or any file. The AI builds it in the world.':'اكتب ما تريد بناءه وأرفق صورة بيت أو مخططات أو أي ملف. الذكاء الاصطناعي يبنيه داخل العالم.','Select a part to edit its properties.':'حدد قطعة لتعديل خصائصها.',
+'Pick 1–5 photos: they map to Front, Right, Back, Left, Roof. One photo wraps all walls.':'اختر من 1 إلى 5 صور: تُوزَّع على الأمام واليمين والخلف واليسار والسقف. صورة واحدة تغطي كل الجدران.',
+'Pick one full-body photo. Skin, shirt and pants colors are sampled and the face is placed on the head.':'اختر صورة واحدة لكامل الجسم. تُؤخذ ألوان البشرة والقميص والبنطال ويوضع الوجه على الرأس.',
+'Pick a photo. The background is removed automatically and it becomes a standing cutout.':'اختر صورة. تُزال الخلفية تلقائيًا وتتحول إلى مجسّم مسطّح قائم.',
+'Copy the script and paste it into the Command Bar in Studio. Images become Decals: upload your photos to Roblox and replace the ids.':'انسخ السكربت والصقه في Command Bar داخل Studio. الصور تتحول إلى Decals: ارفعها على روبلوكس واستبدل الأرقام.',
+'Save the text as a .rbxlx file and open it in Studio, or upload it with Open Cloud.':'احفظ النص كملف .rbxlx وافتحه في Studio أو ارفعه عبر Open Cloud.'};
+const EN={};Object.keys(AR).forEach(k=>EN[AR[k]]=k);let lang='en';try{lang=localStorage.getItem('lang')||'en'}catch(e){}
+const L=k=>lang=='ar'&&AR[k]||k;
+function renderBox(){$('box').innerHTML='<div class="tg">'+TB.map((t,i)=>`<button data-b="${i}"><b>${t[3]}</b>${L(t[0])}</button>`).join('')+`<button data-w="bld"><b>🏢</b>${L('Building')}</button><button data-w="chr"><b>🧍</b>${L('Character')}</button><button data-w="cut"><b>🖼</b>${L('Cutout')}</button></div>`}
+$('box').addEventListener('click',e=>{const b=e.target.closest('[data-w]');if(b)openWz(b.dataset.w)});
+function trp(p){if(lang!='ar')return;p.querySelectorAll('.sec,label,.em').forEach(e=>{const k=e.textContent.trim();if(AR[k])e.textContent=AR[k]})}
+const _pr=props;props=function(){_pr();const p=$('props');if(cur)p.insertAdjacentHTML('beforeend','<div class="sec">Images</div>'+[['f','Front'],['r','Right'],['b','Back'],['l','Left'],['t','Roof']].map(([f,n])=>{const d=cur.userData.dc.find(x=>x.f==f);return `<div class="r"><label>${n}</label><div class="v">${d?`<img src="${IMG[d.i]}" class="th">`:'<span style="opacity:.5">—</span>'}<button class="sb" data-pf="${f}">📷</button>${d?`<button class="sb" data-px="${f}">✕</button>`:''}</div></div>`}).join(''));trp(p)};
+const pf=document.createElement('input');pf.type='file';pf.accept='image/*';pf.style.display='none';document.body.appendChild(pf);let pfF=null;
+$('props').addEventListener('click',e=>{const a=e.target.closest('[data-pf]'),x=e.target.closest('[data-px]');if(a&&cur){pfF=a.dataset.pf;pf.value='';pf.click()}if(x&&cur){rmDecal(cur,x.dataset.px);save()}});
+pf.onchange=async()=>{const fl=pf.files[0];if(!fl||!cur||!pfF)return;addDecal(cur,pfF,store(await readImg(fl,512)));save()};
+let wm='bld',wc=[];
+function openWz(m){wm=m||wm;wc=[];$('wf').value='';$('wz').style.display='flex';wzUI()}
+function wzUI(){document.querySelectorAll('[data-wm]').forEach(b=>b.classList.toggle('on',b.dataset.wm==wm));$('wf').multiple=wm=='bld';
+$('wh').textContent=L({bld:'Pick 1–5 photos: they map to Front, Right, Back, Left, Roof. One photo wraps all walls.',chr:'Pick one full-body photo. Skin, shirt and pants colors are sampled and the face is placed on the head.',cut:'Pick a photo. The background is removed automatically and it becomes a standing cutout.'}[wm]);
+$('wp').innerHTML=wc.map((c,i)=>`<div class="tt"><img class="th" src="${c.toDataURL('image/jpeg',.5)}"><span>${wm=='bld'?L(['Front','Right','Back','Left','Roof'][i]||'—'):''}</span></div>`).join('');$('wb').style.display=wm=='bld'?'flex':'none'}
+document.querySelectorAll('[data-wm]').forEach(b=>b.onclick=()=>{wm=b.dataset.wm;wc=[];$('wf').value='';wzUI()});
+$('wf').onchange=async e=>{const fs=[...e.target.files].slice(0,wm=='bld'?5:1);wc=await Promise.all(fs.map(f=>readImg(f,wm=='cut'?320:512)));wzUI()};
+$('wx').onclick=()=>$('wz').style.display='none';$('img').onclick=()=>openWz('bld');
+$('wc').onclick=()=>{if(!wc.length)return;const nm_=($('wn').value||'').trim()||(wm=='bld'?'Building':wm=='chr'?'Character':'Cutout'),x=Math.round(tg.x),z=Math.round(tg.z);let list=[];
+if(wm=='bld'){const W=Math.max(2,+$('ww').value||20),D=Math.max(2,+$('wd').value||20),H=Math.max(1,+$('wl').value||3)*4,n=wc.length,ids=wc.map(c=>store(c)),m=mk('block',{p:[x,H/2,z],r:[0,0,0],s:[W,H,D],n:nm_,c:avg(wc[0],.2,.2,.8,.8)});['f','r','b','l'].forEach((f,i)=>addDecal(m,f,ids[i%Math.min(n,4)]));if(n>=5)addDecal(m,'t',ids[4]);list=[m]}
+else if(wm=='chr'){const c=wc[0],sk=avg(c,.42,.07,.58,.17),sh=avg(c,.36,.3,.64,.5),pn=avg(c,.38,.62,.62,.85),fc=document.createElement('canvas');fc.width=fc.height=128;fc.getContext('2d').drawImage(c,c.width*.36,c.height*.03,c.width*.28,c.height*.2,0,0,128,128);
+const P=(n,s,p,col)=>mk('block',{p:[x+p[0],p[1],z+p[2]],r:[0,0,0],s,n:nm_+'_'+n,c:col}),hd=P('Head',[1.5,1.5,1.5],[0,4.75,0],sk);addDecal(hd,'f',store(fc));list=[hd,P('Torso',[2,2,1],[0,3,0],sh),P('RightArm',[1,2,1],[1.5,3,0],sk),P('LeftArm',[1,2,1],[-1.5,3,0],sk),P('RightLeg',[1,2,1],[.5,1,0],pn),P('LeftLeg',[1,2,1],[-.5,1,0],pn)]}
+else{const c=keyBg(wc[0]),h=6,w=Math.min(14,Math.max(1,h*c.width/c.height)),id=store(c,true),m=mk('block',{p:[x,h/2,z],r:[0,0,0],s:[w,h,.2],n:nm_,tr:1,c:0xffffff});addDecal(m,'f',id);addDecal(m,'b',id);list=[m]}
+select(null);list.forEach(m=>select(m,true));save();$('wz').style.display='none'};
+// ===== AI builder: images + files -> parts in the world =====
+const AIF=[];
+const SYS=`You are a 3D building assistant inside a Roblox map editor. Convert the user's request, photos and files into primitive parts.
+Units: studs (1 stud ~ 0.28 m, a door ~ 7 high, a floor ~ 12 high, a Roblox character ~ 5 tall). Y is up, ground is y=0. Origin (0,0,0) is the ground-center of the build; +Z is the front of the building.
+Output ONLY JSON Lines: one JSON object per line, no prose, no code fences. Line 1: {"name":"Short name"}. Next lines are parts:
+{"t":"block|ball|cyl|wedge","n":"name","p":[x,y,z],"s":[sx,sy,sz],"r":[rx,ry,rz],"c":"#rrggbb","m":"Plastic|SmoothPlastic|Wood|Slate|Concrete|Metal|Grass|Brick|Neon|Glass","tr":0}
+p is the part CENTER, so a part resting on the ground has y = sy/2. r is degrees (optional). tr is transparency 0-1 (optional, use ~0.5 + Glass for windows).
+cyl has its length along the X axis (rotate rz=90 for a vertical column). wedge is a triangular prism, high at its +Z edge and low at its -Z edge; make a gable roof from two wedges: one at z=-D/4 with ry=0 and one at z=+D/4 with ry=180, each sized [W, rise, D/2].
+Optional "tx":{"f":0} puts uploaded image number 0 (0-based) on a face (f front, b back, l left, r right, t top) - use it sparingly, e.g. a facade photo on a thin front panel.
+Build walls, floor, roof, door, windows, chimney, fence and garden details you can see. Match colors and proportions of the photo. Keep it under 150 parts.`;
+function aiUI(){$('aip2').innerHTML=AIF.map((f,i)=>f.canvas?`<div class="tt"><img class="th" src="${f.canvas.toDataURL('image/jpeg',.5)}"><span>#${AIF.slice(0,i).filter(x=>x.canvas).length}</span></div>`:`<div class="ft">📄 ${f.name.replace(/</g,'&lt;')}</div>`).join('')}
+$('aib').onclick=()=>{$('ai').style.display='flex';$('ast').textContent='';try{$('aik').value=localStorage.getItem('ms_key')||''}catch(e){}};
+$('aix').onclick=()=>$('ai').style.display='none';
+const b64=b=>new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result.split(',')[1]);f.readAsDataURL(b)});
+$('aif').onchange=async e=>{for(const f of [...e.target.files].slice(0,8)){try{
+if(f.type.startsWith('image/'))AIF.push({name:f.name,canvas:await readImg(f,1024)});
+else if(f.type=='application/pdf'||/\.pdf$/i.test(f.name))AIF.push({name:f.name,pdf:await b64(f)});
+else AIF.push({name:f.name,text:(await f.text()).slice(0,30000)})}catch(x){}}
+e.target.value='';aiUI()};
+function aiPart(o){if(!o||!geo[o.t]||!Array.isArray(o.p)||!Array.isArray(o.s))return null;
+const P=o.p.map(Number),S=o.s.map(v=>Math.max(.05,Math.min(512,Number(v)||1))),r=(o.r||[0,0,0]).map(v=>(Number(v)||0)*Math.PI/180);
+if(P.length<3||S.length<3||P.some(isNaN))return null;
+let c=0xa3a2a5;if(/^#?[0-9a-f]{6}$/i.test(o.c||''))c=parseInt(String(o.c).replace('#',''),16);
+return{t:o.t,n:String(o.n||NM[o.t]).slice(0,40),p:[Math.round(tg.x)+P[0],P[1],Math.round(tg.z)+P[2]],s:S.slice(0,3),r:r.slice(0,3),c,m:MATS[o.m]?o.m:'Plastic',tr:Math.min(1,Math.max(0,Number(o.tr)||0))}}
+$('aig').onclick=async()=>{const q=$('aip').value.trim(),st=$('ast');if(!q&&!AIF.length){st.textContent='…';return}
+const key=$('aik').value.trim();try{localStorage.setItem('ms_key',key)}catch(e){}
+const content=[];AIF.forEach(f=>{if(f.canvas)content.push({type:'image',source:{type:'base64',media_type:'image/jpeg',data:f.canvas.toDataURL('image/jpeg',.85).split(',')[1]}});
+else if(f.pdf)content.push({type:'document',source:{type:'base64',media_type:'application/pdf',data:f.pdf}});
+else content.push({type:'text',text:'File "'+f.name+'":\n'+f.text})});
+content.push({type:'text',text:q||'Build the building shown in the image(s).'});
+const H={'Content-Type':'application/json'};if(key){H['x-api-key']=key;H['anthropic-version']='2023-06-01';H['anthropic-dangerous-direct-browser-access']='true'}
+$('aig').disabled=true;st.textContent='⏳ …';
+try{const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:H,body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:8000,system:SYS,messages:[{role:'user',content}]})});
+const d=await res.json();if(!res.ok)throw new Error(d.error&&d.error.message||res.status);
+const txt=(d.content||[]).map(i=>i.text||'').join('\n');let name='AI Build';const ps=[];
+txt.split('\n').forEach(l=>{l=l.trim();if(l[0]!='{')return;try{const o=JSON.parse(l);if(o.name&&!o.t)name=String(o.name).slice(0,40);else{const a=aiPart(o);if(a){if(o.tx&&typeof o.tx=='object')a.dc=Object.entries(o.tx).filter(([f,i])=>FACE[f]&&AIF.filter(x=>x.canvas)[+i]).map(([f,i])=>({f,i:store(AIF.filter(x=>x.canvas)[+i].canvas)}));ps.push(a)}}}catch(e){}});
+if(!ps.length)throw new Error('No parts returned');
+select(null);ps.slice(0,300).forEach(a=>select(mk(a.t,a),true));save();
+st.textContent='✓ '+name+' — '+ps.length;$('ai').style.display='none'}
+catch(e){st.textContent='✗ '+e.message+(key?'':'\n(Outside Claude, add an API key above.)')}
+$('aig').disabled=false};
+function applyLang(){const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT),ns=[];let n;while(n=w.nextNode())ns.push(n);
+ns.forEach(n=>{const p=n.parentElement;if(!p||!p.closest('#rib,#tabs,#md,#wz,#ai')||/SCRIPT|STYLE|TEXTAREA/.test(p.tagName))return;const o=n.nodeValue.trim();if(!o)return;const k=EN[o]||o;if(AR[k])n.nodeValue=lang=='ar'?AR[k]:k});
+$('pane').dir=$('md').dir=$('wz').dir=$('ai').dir=lang=='ar'?'rtl':'ltr';document.documentElement.lang=lang;renderBox();props();wzUI()}
+$('lang').onclick=()=>{lang=lang=='ar'?'en':'ar';try{localStorage.setItem('lang',lang)}catch(e){}applyLang()};
+applyLang();
+// history
+let hist=[],hi=-1;
+const snap=()=>JSON.stringify(items.map(m=>({t:m.userData.t,c:m.material.color.getHex(),n:m.userData.name,m:m.userData.mat,tr:m.userData.tr,an:m.userData.an,co:m.userData.co,dc:m.userData.dc,p:m.position.toArray(),r:[m.rotation.x,m.rotation.y,m.rotation.z],s:m.scale.toArray()})));
+function save(){const s=snap();if(hist[hi]!==s){hist=hist.slice(0,hi+1);hist.push(s);if(hist.length>80)hist.shift();hi=hist.length-1}try{localStorage.setItem('mapstudio',s)}catch(e){}sync()}
+function load(s){items.splice(0).forEach(m=>sc.remove(m));JSON.parse(s).forEach(o=>mk(o.t,o))}
+function go(i){if(i<0||i>=hist.length)return;hi=i;load(hist[i]);select(null);try{localStorage.setItem('mapstudio',hist[i])}catch(e){}}
+$('un').onclick=()=>go(hi-1);$('re').onclick=()=>go(hi+1);
+try{const d=localStorage.getItem('mapstudio');if(d)load(d)}catch(e){}
+if(!items.length){mk('spawn',{p:[0,.5,0],r:[0,0,0],s:[6,1,6],c:0x6aa84f})}
+hist=[snap()];hi=0;select(null);
+// interaction
+const ray=new R.Raycaster(),pts=new Map();let moved=0,maxP=0,lD=0,lM=null,gd=null,bd=null;
+const ndc=e=>{const r=cv.getBoundingClientRect();return new R.Vector2((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1)},aim=e=>ray.setFromCamera(ndc(e),cam);
+const sn=(v,i)=>Math.round(v/i)*i,dist=()=>{const a=[...pts.values()];return Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)||1},mid=()=>{const a=[...pts.values()];return{x:(a[0].x+a[1].x)/2,y:(a[0].y+a[1].y)/2}};
+function lineT(P,u){const v=ray.ray.direction,w=P.clone().sub(ray.ray.origin),b=u.dot(v),d=u.dot(w),e=v.dot(w),den=1-b*b;return den<1e-4?0:(b*e-d)/den}
+function ang(g){const h=ray.ray.intersectPlane(new R.Plane().setFromNormalAndCoplanarPoint(g.n,g.C0),new R.Vector3());if(!h)return g.a0||0;h.sub(g.C0);return Math.atan2(h.dot(g.v),h.dot(g.u))}
+function down(e){gd=bd=null;if(pts.size)return;aim(e);
+if(cur&&gm[tool]){const h=ray.intersectObjects(gm[tool].children,true)[0];if(h){const u=h.object.userData,C0=gz.position.clone();gd={...u,C0,on:false,st:[...sels].map(m=>({p:m.position.clone(),q:m.quaternion.clone(),s:m.scale.clone()}))};
+if(u.k=='move'){gd.d=AX[u.a].clone();gd.t0=lineT(C0,gd.d)}else if(u.k=='scale'){gd.d=AX[u.a].clone().applyQuaternion(cur.quaternion);gd.t0=lineT(cur.position,gd.d)}
+else{gd.n=AX[u.a];gd.u=gd.n.clone().cross(Math.abs(gd.n.y)<.9?AX.y:AX.x).normalize();gd.v=gd.n.clone().cross(gd.u);gd.a0=ang(gd)}return}}
+if(tool=='select'){const h=ray.intersectObjects(items)[0];if(h){const o=h.object;if(!multi&&!sels.has(o))select(o);if(sels.has(o)){const pl=new R.Plane(new R.Vector3(0,1,0),-h.point.y),p0=ray.ray.intersectPlane(pl,new R.Vector3());if(p0)bd={pl,p0,st:[...sels].map(m=>m.position.clone()),on:false}}}}}
+function dragG(e){aim(e);const g=gd;g.on=true;
+if(g.k=='move'){const d=sn(lineT(g.C0,g.d)-g.t0,im);[...sels].forEach((m,i)=>m.position.copy(g.st[i].p).addScaledVector(g.d,d))}
+else if(g.k=='scale'){const o=g.st[g.st.length-1],raw=(lineT(o.p,g.d)-g.t0)*g.s,ns=Math.max(.05,sn(o.s[g.a]+raw,im));cur.scale[g.a]=ns;cur.position.copy(o.p).addScaledVector(g.d,g.s*(ns-o.s[g.a])/2)}
+else{const dl=sn(ang(g)-g.a0,ir*Math.PI/180);[...sels].forEach((m,i)=>{m.quaternion.copy(g.st[i].q);m.rotateOnWorldAxis(g.n,dl)})}props()}
+function dragB(e){aim(e);const p=ray.ray.intersectPlane(bd.pl,new R.Vector3());if(!p)return;const d=p.sub(bd.p0);d.y=0;d.x=sn(d.x,im);d.z=sn(d.z,im);[...sels].forEach((m,i)=>m.position.copy(bd.st[i]).add(d));bd.on=true;props()}
+cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);down(e);pts.set(e.pointerId,{x:e.clientX,y:e.clientY});if(pts.size==1)moved=0;maxP=Math.max(maxP,pts.size);if(pts.size==2){gd=bd=null;lD=dist();lM=mid()}});
+cv.addEventListener('pointermove',e=>{const p=pts.get(e.pointerId);if(!p)return;const dx=e.clientX-p.x,dy=e.clientY-p.y;p.x=e.clientX;p.y=e.clientY;moved+=Math.abs(dx)+Math.abs(dy);
+if(pts.size==1){if(gd){dragG(e);return}if(bd){if(moved>8)dragB(e);return}th-=dx*.006;ph=Math.max(.05,Math.min(1.5,ph+dy*.006))}
+else if(pts.size==2){const d=dist(),m=mid();rad=Math.max(4,Math.min(500,rad*lD/d));lD=d;const k=rad*.0016,r=new R.Vector3().setFromMatrixColumn(cam.matrixWorld,0),u=new R.Vector3().setFromMatrixColumn(cam.matrixWorld,1);tg.addScaledVector(r,-(m.x-lM.x)*k).addScaledVector(u,(m.y-lM.y)*k);tg.y=Math.max(0,tg.y);lM=m}
+upCam()});
+function up(e){pts.delete(e.pointerId);if(pts.size)return;const g=gd&&gd.on,b=bd&&bd.on;
+if(g||b)save();else if(!gd&&moved<8&&maxP==1){aim(e);const h=ray.intersectObjects(items)[0];if(h)select(h.object,multi);else if(!multi)select(null)}gd=bd=null;maxP=0}
+cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
+cv.addEventListener('wheel',e=>{rad=Math.max(4,Math.min(500,rad*(1+e.deltaY*.001)));upCam()},{passive:true});
+addEventListener('keydown',e=>{if(/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return;const c=e.ctrlKey||e.metaKey;
+if(c&&'1234'.includes(e.key)){e.preventDefault();document.querySelectorAll('[data-tool]')['1234'.indexOf(e.key)].click()}else if(e.key=='Delete'||e.key=='Backspace')$('del').click();else if(c&&e.key=='z'){e.preventDefault();$('un').click()}else if(c&&e.key=='y'){e.preventDefault();$('re').click()}else if(c&&e.key=='d'){e.preventDefault();$('dup').click()}});
+(function loop(){requestAnimationFrame(loop);const show=cur&&gm[tool];gz.visible=!!show;
+if(show){gz.position.copy(cur.position);const sg=cam.position.distanceTo(cur.position)*.1;gz.scale.setScalar(sg);Object.keys(gm).forEach(k=>gm[k].visible=k==tool);gz.quaternion.copy(tool=='scale'?cur.quaternion:ident);
+if(tool=='scale')gm.scale.children.forEach(h=>{const a=h.userData.a;h.position.copy(AX[a]).multiplyScalar(h.userData.s*(cur.scale[a]/2/sg+.5))});gz.updateMatrixWorld(true)}
+ren.render(sc,cam)})();
+// export
+const f=n=>(+n.toFixed(3)).toString(),nm=s=>s.replace(/[\\"\r\n]/g,''),xe=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function rm(m){const e=new R.Matrix4().makeRotationFromQuaternion(m.quaternion).elements;return[e[0],e[4],e[8],e[1],e[5],e[9],e[2],e[6],e[10]].map(f)}
+const cls=t=>t=='wedge'?'WedgePart':t=='spawn'?'SpawnLocation':'Part',SH={ball:0,block:1,cyl:2};
+function luau(){let s='-- Paste into the Command Bar in Roblox Studio\nlocal f=Instance.new("Folder",workspace) f.Name="MyMap"\nlocal function P(c,sh,cf,sz,col,mt,tr,an,co,n) local p=Instance.new(c) p.Name=n p.Anchored=an p.CanCollide=co p.Size=sz p.CFrame=cf p.Color=col p.Material=Enum.Material[mt] p.Transparency=tr if sh then p.Shape=sh end p.Parent=f return p end\nlocal function D(p,fc,id) local d=Instance.new("Decal") d.Face=fc d.Texture=id d.Parent=p end\n';
+items.forEach(m=>{const u=m.userData,c=m.material.color,sh=u.t=='ball'?'Enum.PartType.Ball':u.t=='cyl'?'Enum.PartType.Cylinder':u.t=='block'?'Enum.PartType.Block':'nil';
+const dd=(u.dc||[]).map(d=>`D(p,Enum.NormalId.${FN[d.f]},"rbxassetid://0")`).join(' ');s+=(dd?'do local p=':'')+`P("${cls(u.t)}",${sh},CFrame.new(${f(m.position.x)},${f(m.position.y)},${f(m.position.z)},${rm(m).join(',')}),Vector3.new(${m.scale.toArray().map(f).join(',')}),Color3.fromRGB(${[c.r,c.g,c.b].map(v=>Math.round(v*255)).join(',')}),"${u.mat}",${u.tr},${u.an},${u.co},"${nm(u.name)}")`+(dd?' '+dd+' end':'')+'\n'});return s}
+function xml(){let n=1,s='<roblox version="4"><Item class="Workspace" referent="RBX0"><Properties><string name="Name">Workspace</string></Properties>';
+items.forEach(m=>{const u=m.userData,c=m.material.color,k=(0xFF000000|(Math.round(c.r*255)<<16)|(Math.round(c.g*255)<<8)|Math.round(c.b*255))>>>0,r=rm(m);
+s+=`<Item class="${cls(u.t)}" referent="RBX${n++}"><Properties><string name="Name">${xe(u.name)}</string><bool name="Anchored">${u.an}</bool><bool name="CanCollide">${u.co}</bool><Color3uint8 name="Color3uint8">${k}</Color3uint8><token name="Material">${MTOK[u.mat]}</token><float name="Transparency">${u.tr}</float>${SH[u.t]==null?'':`<token name="shape">${SH[u.t]}</token>`}<CoordinateFrame name="CFrame"><X>${f(m.position.x)}</X><Y>${f(m.position.y)}</Y><Z>${f(m.position.z)}</Z>${['R00','R01','R02','R10','R11','R12','R20','R21','R22'].map((q,i)=>`<${q}>${r[i]}</${q}>`).join('')}</CoordinateFrame><Vector3 name="size"><X>${f(m.scale.x)}</X><Y>${f(m.scale.y)}</Y><Z>${f(m.scale.z)}</Z></Vector3></Properties></Item>`});return s+'</Item></roblox>'}
+let tab='luau';const out=$('out');
+function show(){out.value=tab=='luau'?luau():xml();$('tip').textContent=L(tab=='luau'?'Copy the script and paste it into the Command Bar in Studio. Images become Decals: upload your photos to Roblox and replace the ids.':'Save the text as a .rbxlx file and open it in Studio, or upload it with Open Cloud.')}
+$('ex').onclick=()=>{$('md').style.display='flex';show()};$('cl').onclick=()=>$('md').style.display='none';
+document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{tab=b.dataset.t;document.querySelectorAll('[data-t]').forEach(x=>x.classList.toggle('on',x==b));show()});
+$('cp').onclick=async()=>{try{await navigator.clipboard.writeText(out.value)}catch(e){out.select();document.execCommand('copy')}$('cp').textContent=L('Copied ✓');setTimeout(()=>$('cp').textContent=L('Copy'),1500)};
+</script>
+</body>
+</html>
